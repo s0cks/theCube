@@ -1,0 +1,6 @@
+Main-Class: theCube.TheCube
+Build-Jdk: 1.8.0_45
+Created-By: Apache Maven 3.3.3
+Built-By: Asyncronous
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
