@@ -15,4 +15,15 @@ public final class Packs{
         packs.add(new Pack("dw20", "Direwolf20"));
         packs.add(new Pack("epic", "Epic"));
     }
+
+    private static final List<Pack> master = new LinkedList<>(packs);
+
+    public static void removeHidden(){
+        packs.clear();
+        for(Pack pack : master){
+            if(!pack.isHidden()){
+                packs.add(pack);
+            }
+        }
+    }
 }

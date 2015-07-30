@@ -7,19 +7,36 @@ import theCube.ui.TheCubeFrame;
 import theCube.utils.FileSystem;
 import theCube.utils.OperatingSystem;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public final class TheCube{
     static{
         FileSystem.initialize();
     }
 
+    public static final Color iconTargetColor = Color.decode("#221504");
+    public static final BufferedImage icon;
+    static{
+        try{
+            icon = ImageIO.read(System.class.getResourceAsStream("/assets/thecube/theCube.png"));
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final ObjectMapper MAPPER = JsonFactory.create();
     public static final OkHttpClient CLIENT = new OkHttpClient();
     public static final TheCubeFrame FRAME = new TheCubeFrame();
+    public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
     public static final Font FONT;
     static {
         try {
@@ -31,10 +48,25 @@ public final class TheCube{
 
     public static void main(String... args){
         SwingUtilities.invokeLater(new Runnable() {
-                                       public void run() {
-                                           FRAME.setVisible(true);
-                                       }
-                                   });
+            public void run() {
+                FRAME.setVisible(true);
+            }
+        });
+    }
+
+    public static void balloon(String title, String desc){
+        FRAME.balloon(title, desc);
+        EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+                    FRAME.pop();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     public static Path getCoreGracefully(){

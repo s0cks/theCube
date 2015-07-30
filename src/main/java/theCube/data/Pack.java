@@ -7,6 +7,7 @@ import java.io.IOException;
 public final class Pack{
     public final String name;
     public final String description;
+    private boolean hidden;
 
     public Pack(String name, String description){
         this.name = name;
@@ -31,5 +32,17 @@ public final class Pack{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isHidden(){
+        return this.hidden;
+    }
+
+    public void show(){
+        this.hidden = true;
+    }
+
+    public void hide(){
+        this.hidden = true;
     }
 }

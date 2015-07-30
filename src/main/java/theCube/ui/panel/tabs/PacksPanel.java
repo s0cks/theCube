@@ -1,5 +1,6 @@
 package theCube.ui.panel.tabs;
 
+import theCube.Accounts;
 import theCube.Packs;
 import theCube.TheCube;
 import theCube.data.Pack;
@@ -18,6 +19,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -26,7 +28,6 @@ import java.awt.event.MouseWheelListener;
 public final class PacksPanel
 extends JPanel {
     private static int ptr = 0;
-    private static Pack pack = Packs.packs.get(ptr);
     private static PackDescriptionComponent packDescComp = new PackDescriptionComponent();
     private static PackListComponent packListComp = new PackListComponent();
 
@@ -53,32 +54,41 @@ extends JPanel {
     }
 
     private static Pack getPrevious(){
+        Packs.removeHidden();
         return ptr <= 0 ? null : Packs.packs.get(ptr - 1);
     }
 
     private static Pack getCurrent(){
+        Packs.removeHidden();
         return ptr >= 0 && ptr <= Packs.packs.size() - 1 ? Packs.packs.get(ptr) : null;
     }
 
     private static Pack getNext(){
+        Packs.removeHidden();
         return ptr >= Packs.packs.size() - 1 ? null : Packs.packs.get(ptr + 1);
     }
 
     private static Pack getSecond(){
+        Packs.removeHidden();
         return ptr >= Packs.packs.size() - 2 ? null : Packs.packs.get(ptr + 2);
     }
 
     private static Pack getThird(){
+        Packs.removeHidden();
         return ptr >= Packs.packs.size() - 3 ? null : Packs.packs.get(ptr + 3);
     }
 
     private static final class PackListComponent
     extends JComponent
-    implements MouseWheelListener{
+    implements MouseWheelListener,
+               MouseListener{
+        private final Rectangle clientInstallBounds = new Rectangle(213, 176, 101, 24);
+        private final Rectangle serverInstallBounds = new Rectangle(324, 176, 101, 24);
 
         public PackListComponent(){
             this.setPreferredSize(new Dimension(700, 640));
             this.addMouseWheelListener(this);
+            this.addMouseListener(this);
         }
 
         private void back(){
@@ -87,6 +97,7 @@ extends JPanel {
                 ptr = 0;
             } else{
                 this.repaint();
+                packDescComp.repaint();
             }
         }
 
@@ -96,6 +107,7 @@ extends JPanel {
                 ptr = Packs.packs.size() - 1;
             } else{
                 this.repaint();
+                packDescComp.repaint();
             }
         }
 
@@ -144,7 +156,22 @@ extends JPanel {
                 g2.fillRect(x, y, width, rectHeight);
                 g2.drawImage(pack.getIcon(), x + 10, y + 10, iconScale, iconScale, null);
                 g2.setColor(Color.BLACK);
-                g2.drawString(pack.name, x + iconScale + 20, y + (rectHeight - g2.getFontMetrics().getAscent()) / 2);
+                g2.drawString(pack.name, x + iconScale + 20, y + (rectHeight - g2.getFontMetrics()
+                                                                                 .getAscent()) / 2);
+                g2.setFont(TheCube.FONT.deriveFont(12.0F));
+
+                g2.setColor(Accounts.current.sidebarColor);
+                g2.fill(this.clientInstallBounds);
+                g2.setColor(Color.WHITE);
+                g2.drawString("CLIENT", this.clientInstallBounds.x + ((this.clientInstallBounds.width - g2.getFontMetrics()
+                                                                                                          .stringWidth("Client")) / 2), this.clientInstallBounds.y + ((this.clientInstallBounds.height - g2.getFontMetrics()
+                                                                                                                                                                                                           .getAscent()) / 2) + g2.getFontMetrics().getAscent());
+                g2.setColor(Accounts.current.sidebarColor);
+                g2.fill(this.serverInstallBounds);
+                g2.setColor(Color.WHITE);
+                g2.drawString("SERVER", this.serverInstallBounds.x + ((this.serverInstallBounds.width - g2.getFontMetrics()
+                                                                                                          .stringWidth("Server")) / 2), this.serverInstallBounds.y + ((this.serverInstallBounds.height - g2.getFontMetrics()
+                                                                                                                                                                                                           .getAscent() / 2)));
             } else{
                 g2.setColor(Color.LIGHT_GRAY);
                 g2.setComposite(alpha);
@@ -212,6 +239,35 @@ extends JPanel {
                 this.next();
             }
         }
+
+        @Override
+        public void mouseClicked(MouseEvent mouseEvent) {
+            if(this.clientInstallBounds.contains(mouseEvent.getPoint())){
+                TheCube.balloon("Installing Client", getCurrent().name);
+            } else if(this.serverInstallBounds.contains(mouseEvent.getPoint())){
+                TheCube.balloon("Installing Server", getCurrent().name);
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent mouseEvent) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent mouseEvent) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent mouseEvent) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent mouseEvent) {
+
+        }
     }
 
     private static final class PackDescriptionComponent
@@ -219,7 +275,7 @@ extends JPanel {
     implements MouseWheelListener,
                MouseListener{
         private int offset = 0;
-        private String[] lines = Strings.wrap(pack.description, 43).split("\n");
+        private String[] lines = new String[0];
         private boolean rollover = false;
 
         public PackDescriptionComponent(){
@@ -232,6 +288,7 @@ extends JPanel {
         public void paint(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             Composite composite = g2.getComposite();
+            Pack pack = getCurrent();
 
             int pad = 25;
             int x = 35;
@@ -248,6 +305,7 @@ extends JPanel {
             g2.setFont(TheCube.FONT.deriveFont(12.0F));
             x -= 10;
             y += g2.getFontMetrics().getAscent() + 3;
+            this.lines = Strings.wrap(pack.description, 43).split("\n");
             for(int i = offset; i < this.lines.length; i++){
                 if((y += g2.getFontMetrics().getAscent() + 3) < this.getHeight() - pad){
                     g2.drawString(this.lines[i], x, y);

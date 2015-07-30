@@ -4,6 +4,7 @@ import theCube.Accounts;
 import theCube.TheCube;
 import theCube.data.Account;
 import theCube.ui.Antialias;
+import theCube.ui.Colorizer;
 import theCube.ui.Colors;
 import theCube.ui.comp.AccountSelectionComboBox;
 import theCube.ui.event.TabChangeEvent;
@@ -17,6 +18,8 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -29,10 +32,12 @@ import java.awt.event.ItemListener;
 public final class TopBarPanel
 extends JPanel {
     private final ToggleButtonGroup group = new ToggleButtonGroup();
-    private final JToggleButton addUserButton = new TopBarButton("+ Add User", true);
-    private final JToggleButton modpacksButton = new TopBarButton("Packs");
-    private final JToggleButton settingsButton = new TopBarButton("Settings");
+    private final TopBarCubeButton dashboardButton = new TopBarCubeButton();
+    private final JToggleButton addUserButton = new TopBarButton("+ ADD USER");
+    private final JToggleButton modpacksButton = new TopBarButton("PACKS");
+    private final JToggleButton settingsButton = new TopBarButton("SETTINGS");
     {
+        this.group.add(this.dashboardButton);
         this.group.add(this.addUserButton);
         this.group.add(this.modpacksButton);
         this.group.add(this.settingsButton);
@@ -60,6 +65,8 @@ extends JPanel {
         gbc.weightx = 1.0;
         gbc.gridwidth = gbc.gridheight = 1;
         gbc.gridx = gbc.gridy = 0;
+        this.add(this.dashboardButton, gbc);
+        gbc.gridx++;
         this.add(this.addUserButton, gbc);
         gbc.gridx++;
         this.add(this.modpacksButton, gbc);
@@ -79,10 +86,16 @@ extends JPanel {
     }
 
     private void addActionListeners(){
-        this.addUserButton.addActionListener(new ActionListener() {
+        this.dashboardButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 TheCube.FRAME.fireTabChange(new TabChangeEvent(actionEvent.getSource(), TabChangeEvent.TAB_DASHBOARD));
+            }
+        });
+        this.addUserButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
             }
         });
         this.modpacksButton.addActionListener(new ActionListener() {
@@ -122,6 +135,43 @@ extends JPanel {
         }
     }
 
+    public static final class TopBarCubeButton
+    extends JToggleButton{
+        public TopBarCubeButton(){
+            super("theCube", true);
+            this.setRolloverEnabled(true);
+            this.setPreferredSize(new Dimension(64, 64));
+        }
+
+        @Override
+        public void paint(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+
+            if(this.getModel().isPressed() || this.getModel().isRollover()){
+                if(this.isOpaque()){
+                    g2.setColor(Colors.GRAY.brighter());
+                    g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+                }
+            } else if(this.getModel().isSelected()){
+                if(this.isOpaque()){
+                    g2.setColor(Colors.DARK_BLUE);
+                    g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+                }
+            } else{
+                if(this.isOpaque()){
+                    g2.setColor(Colors.GRAY);
+                    g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+                }
+            }
+
+            int x = (this.getWidth() - 64) / 2;
+            int y = (this.getHeight() - 64) / 2;
+            Antialias.on(g2);
+            g2.drawImage(Colorizer.colorize(TheCube.icon, TheCube.iconTargetColor, Accounts.current.sidebarColor), x, y, 64, 64, null);
+            Antialias.off(g2);
+        }
+    }
+
     public static final class TopBarIconButton
     extends JButton{
         public TopBarIconButton(String icon){
@@ -155,11 +205,6 @@ extends JPanel {
 
     public static final class TopBarButton
     extends JToggleButton{
-        public TopBarButton(String text, boolean selected){
-            super(text, selected);
-            this.setRolloverEnabled(true);
-        }
-
         public TopBarButton(String text){
             super(text);
             this.setRolloverEnabled(true);
@@ -191,7 +236,7 @@ extends JPanel {
             int y = (this.getHeight() - g2.getFontMetrics().getHeight()) / 2;
 
             g2.setColor(Color.WHITE);
-            g2.setFont(TheCube.FONT.deriveFont(16.0F));
+            g2.setFont(TheCube.FONT.deriveFont(Font.BOLD, 16.0F));
             Antialias.on(g2);
             g2.drawString(text, x, y + g2.getFontMetrics().getAscent());
             Antialias.off(g2);

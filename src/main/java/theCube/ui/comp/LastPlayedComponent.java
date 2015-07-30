@@ -1,6 +1,7 @@
 package theCube.ui.comp;
 
 import theCube.Accounts;
+import theCube.News;
 import theCube.Packs;
 import theCube.TheCube;
 import theCube.data.Pack;
@@ -16,11 +17,16 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public final class LastPlayedComponent
-extends JComponent {
+extends JComponent
+implements MouseListener{
     public LastPlayedComponent(){
+        this.setOpaque(false);
         this.setPreferredSize(new Dimension(700, 640));
+        this.addMouseListener(this);
     }
 
     @Override
@@ -74,5 +80,30 @@ extends JComponent {
 
     public AlphaComposite alpha(float f){
         return AlphaComposite.getInstance(AlphaComposite.SRC_OVER, f);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+        TheCube.balloon(News.news.get(0).header, News.news.get(0).text);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent mouseEvent) {
+
     }
 }
