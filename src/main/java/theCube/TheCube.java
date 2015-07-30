@@ -4,11 +4,13 @@ import com.squareup.okhttp.OkHttpClient;
 import org.boon.json.JsonFactory;
 import org.boon.json.ObjectMapper;
 import theCube.ui.TheCubeFrame;
+import theCube.ui.event.AccountChangeEvent;
 import theCube.utils.FileSystem;
 import theCube.utils.OperatingSystem;
 
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
@@ -22,6 +24,8 @@ public final class TheCube{
     static{
         FileSystem.initialize();
     }
+
+    private static final EventListenerList listeners = new EventListenerList();
 
     public static final Color iconTargetColor = Color.decode("#221504");
     public static final BufferedImage icon;
@@ -67,6 +71,16 @@ public final class TheCube{
                 }
             }
         });
+    }
+
+    public static void addAccountChangeListener(AccountChangeEvent.Listener l){
+        listeners.add(AccountChangeEvent.Listener.class, l);
+    }
+
+    public static void fireAccountChange(AccountChangeEvent e){
+        for(AccountChangeEvent.Listener obj : listeners.getListeners(AccountChangeEvent.Listener.class)){
+            obj.onAccountChange(e);
+        }
     }
 
     public static Path getCoreGracefully(){

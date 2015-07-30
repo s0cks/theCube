@@ -7,13 +7,12 @@ import theCube.ui.Antialias;
 import theCube.ui.Colorizer;
 import theCube.ui.Colors;
 import theCube.ui.comp.AccountSelectionComboBox;
+import theCube.ui.event.AccountChangeEvent;
 import theCube.ui.event.TabChangeEvent;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -28,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
 
 public final class TopBarPanel
 extends JPanel {
@@ -42,9 +42,6 @@ extends JPanel {
         this.group.add(this.modpacksButton);
         this.group.add(this.settingsButton);
     }
-    private final JButton twitterButton = new TopBarIconButton("twitter");
-    private final JButton githubButton = new TopBarIconButton("github");
-    private final JButton facebookButton = new TopBarIconButton("facebook");
     private final JComboBox<Account> accountJComboBox = new AccountSelectionComboBox();
     {
         this.accountJComboBox.addItem(Accounts.current);
@@ -59,8 +56,8 @@ extends JPanel {
         this.setBackground(Colors.GRAY);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.VERTICAL;
-        gbc.weighty = 0.1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
         gbc.insets.set(0, 0, 0, 0);
         gbc.weightx = 1.0;
         gbc.gridwidth = gbc.gridheight = 1;
@@ -74,12 +71,6 @@ extends JPanel {
         this.add(this.settingsButton, gbc);
         gbc.gridx++;
         this.add(Box.createHorizontalStrut(256), gbc);
-        gbc.gridx++;
-        this.add(this.twitterButton, gbc);
-        gbc.gridx++;
-        this.add(this.facebookButton, gbc);
-        gbc.gridx++;
-        this.add(this.githubButton, gbc);
         gbc.gridx++;
         this.add(this.accountJComboBox, gbc);
         this.addActionListeners();
@@ -113,6 +104,7 @@ extends JPanel {
         this.accountJComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
+                TheCube.fireAccountChange(new AccountChangeEvent(this, Accounts.current, (Account) itemEvent.getItem()));
                 Accounts.current = (Account) itemEvent.getItem();
                 TheCube.FRAME.repaint();
                 TheCube.FRAME.revalidate();
@@ -136,11 +128,14 @@ extends JPanel {
     }
 
     public static final class TopBarCubeButton
-    extends JToggleButton{
+    extends JToggleButton
+    implements AccountChangeEvent.Listener{
+        private BufferedImage icon = Colorizer.colorize(TheCube.icon, TheCube.iconTargetColor, Accounts.current.sidebarColor);
+
         public TopBarCubeButton(){
             super("theCube", true);
             this.setRolloverEnabled(true);
-            this.setPreferredSize(new Dimension(64, 64));
+            TheCube.addAccountChangeListener(this);
         }
 
         @Override
@@ -167,39 +162,14 @@ extends JPanel {
             int x = (this.getWidth() - 64) / 2;
             int y = (this.getHeight() - 64) / 2;
             Antialias.on(g2);
-            g2.drawImage(Colorizer.colorize(TheCube.icon, TheCube.iconTargetColor, Accounts.current.sidebarColor), x, y, 64, 64, null);
+            g2.drawImage(this.icon, x, y, 64, 64, null);
             Antialias.off(g2);
-        }
-    }
-
-    public static final class TopBarIconButton
-    extends JButton{
-        public TopBarIconButton(String icon){
-            super(new ImageIcon(System.class.getResource("/assets/thecube/buttons/" + icon + ".png")));
-            this.setRolloverEnabled(true);
         }
 
         @Override
-        public void paint(Graphics g){
-            Graphics2D g2 = (Graphics2D) g;
-
-            if(this.getModel().isPressed() || this.getModel().isRollover()){
-                if(this.isOpaque()){
-                    g2.setColor(Colors.GRAY.brighter());
-                    g2.fillRect(0, 0, this.getWidth(), this.getHeight());
-                }
-            } else{
-                if(this.isOpaque()){
-                    g2.setColor(Colors.GRAY);
-                    g2.fillRect(0, 0, this.getWidth(), this.getHeight());
-                }
-            }
-
-            int x = (this.getWidth() - 32) / 2;
-            int y = (this.getHeight() - 32) / 2;
-            Antialias.on(g2);
-            this.getIcon().paintIcon(this, g2, x, y);
-            Antialias.off(g2);
+        public void onAccountChange(AccountChangeEvent e) {
+            this.icon = Colorizer.colorize(this.icon, e.from.sidebarColor, e.to.sidebarColor);
+            this.repaint();
         }
     }
 
@@ -208,6 +178,7 @@ extends JPanel {
         public TopBarButton(String text){
             super(text);
             this.setRolloverEnabled(true);
+            this.setPreferredSize(new Dimension(256, 64));
         }
 
         @Override

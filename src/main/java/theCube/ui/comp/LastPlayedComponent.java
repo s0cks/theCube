@@ -46,7 +46,7 @@ implements MouseListener{
 
         Font f = TheCube.FONT;
         g2.setFont(f.deriveFont(24.0F));
-        g2.drawString("Last Played - ", x, y);
+        g2.drawString("Last Played: ", x, y);
         x = (this.getWidth() - g2.getFontMetrics().stringWidth(pack.name)) - 50;
         g2.drawString(pack.name, x, y);
         x = (this.getWidth() / 2) - 150;

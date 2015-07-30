@@ -1,12 +1,11 @@
 package theCube.ui;
 
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 public final class Colorizer{
-    public static Image colorize(BufferedImage image, Color from, Color to){
-        BufferedImage newImage = new BufferedImage(64, 64, BufferedImage.TYPE_4BYTE_ABGR);
+    public static BufferedImage colorize(BufferedImage image, Color from, Color to){
+        BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 
         for(int y = 0; y < image.getHeight(); y++){
             for(int x = 0; x < image.getWidth(); x++){

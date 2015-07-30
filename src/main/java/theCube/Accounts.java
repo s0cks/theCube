@@ -13,6 +13,6 @@ public final class Accounts{
     public static final List<Account> accounts = new LinkedList<>();
     static{
         accounts.add(new Account("Pyker", Colors.GREEN));
-        accounts.add(new Account("JZTech101", Color.decode("#663399")));
+        accounts.add(new Account("JZTech101", Color.decode("#002146").brighter().brighter()));
     }
 }
